@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@discordjs/voice": "^0.18.0",
+    "chalk": "^5.4.1",
+    "discord.js-selfbot-v13": "^3.6.1",
+    "genius-lyrics-api": "^3.2.1",
+    "gif-search": "^3.0.3",
+    "httpss": "^1.0.0",
+    "node-fetch": "^2.7.0",
+    "translate-google": "^1.5.0"
+  }
+}
