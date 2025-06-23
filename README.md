@@ -85,3 +85,14 @@ Pour installer et exécuter ce self-bot, suivez les étapes ci-dessous :
 ## ⚙️ Configuration (via le Menu Console)
 
 Après la connexion réussie, un menu s'affichera dans votre console :
+
+* **1️⃣ Changer de compte :** Permet de se connecter avec un nouveau token.
+* **2️⃣ Activer/Désactiver le Sniper Nitro :** Bascule l'état de la fonctionnalité Nitro Sniper.
+* **3️⃣ Quitter :** Arrête le bot.
+
+## ⚠️ Avertissement Légal et Risques
+
+* **Conditions d'Utilisation de Discord :** L'utilisation de self-bots viole les Conditions d'Utilisation de Discord. Cela peut entraîner un avertissement, une suspension temporaire, ou la résiliation permanente de votre compte Discord.
+* **Sécurité du Compte :** Partager votre token Discord ou l'utiliser avec des scripts non fiables peut compromettre la sécurité de votre compte.
+* **Modération :** L'abus de ce bot ou son utilisation de manière perturbatrice sur des serveurs peut entraîner des sanctions de la part des modérateurs de ces serveurs.
+* **Développement :** Ce bot est fourni "tel quel". Le développeur n'est pas responsable des actions que vous entreprenez avec ce script.
