@@ -304,32 +304,19 @@ async function handleCleanupCommand(message, args) {
         const fetchedMessages = await message.channel.messages.fetch({ limit: limit });
         const userMessages = fetchedMessages.filter(m => m.author.id === client.user.id);
         if (userMessages.size === 0) {
-            if(message.deletable) await message.delete().catch(()=>{});
+            if (message.deletable) await message.delete().catch(() => {});
             const confirm = await message.channel.send('✅ Aucun de vos messages à supprimer n\'a été trouvé dans la plage spécifiée.');
             setTimeout(() => confirm.delete().catch(() => {}), 3000);
             return;
         }
-        const twoWeeksAgo = Date.now() - (14 * 24 * 60 * 60 * 1000);
-        const deletableMessages = userMessages.filter(m => m.createdTimestamp > twoWeeksAgo);
-        const tooOldMessagesCount = userMessages.size - deletableMessages.size;
-        if (deletableMessages.size === 0) {
-            if(message.deletable) await message.delete().catch(()=>{});
-            const confirm = await message.channel.send(`⚠️ Aucun de vos messages récents (<14j) n'a été trouvé dans la plage spécifiée. ${tooOldMessagesCount > 0 ? `(${tooOldMessagesCount} messages trouvés mais trop anciens)` : ''}`);
-            setTimeout(() => confirm.delete().catch(() => {}), 3000);
-            return;
-        }
         let deletedCount = 0;
-        if (message.channel.type === 'DM') {
-            console.log(chalk.yellow('[INFO] Cleanup en DM. Suppression individuelle...'));
-            for (const msg of deletableMessages.values()) {
-                await msg.delete().catch(() => {});
-                deletedCount++;
-                await delay(350);
-            }
-            const confirmMsg = await message.channel.send(`✅ ${deletedCount} messages supprimés de vos DMs.`);
-            setTimeout(() => confirmMsg.delete().catch(() => {}), 5000);
-        } else if (typeof message.channel.bulkDelete === 'function') {
-            const messagesToBulkDelete = deletableMessages.array();
+        const twoWeeksAgo = Date.now() - (14 * 24 * 60 * 60 * 1000);
+        const recentMessages = userMessages.filter(m => m.createdTimestamp > twoWeeksAgo);
+        const olderMessages = userMessages.filter(m => m.createdTimestamp <= twoWeeksAgo);
+        
+
+        if (message.channel.type !== 'DM' && recentMessages.size > 0 && typeof message.channel.bulkDelete === 'function') {
+            const messagesToBulkDelete = recentMessages.array();
             const chunks = [];
             for (let i = 0; i < messagesToBulkDelete.length; i += 99) {
                 chunks.push(messagesToBulkDelete.slice(i, i + 99));
@@ -341,15 +328,31 @@ async function handleCleanupCommand(message, args) {
                 deletedCount += chunk.length;
                 await delay(1000);
             }
-            const confirmMsg = await message.channel.send(`✅ ${deletedCount} messages supprimés.${tooOldMessagesCount > 0 ? ` (${tooOldMessagesCount} messages trouvés mais trop anciens pour être supprimés en masse.)` : ''}`);
-            setTimeout(() => confirmMsg.delete().catch(() => {}), 5000);
-        } else {
-            const confirmMsg = await message.channel.send(`✅ ${deletableMessages.size} messages supprimés.`);
-            setTimeout(() => confirmMsg.delete().catch(() => {}), 3000);
         }
+        
+
+        const messagesToDeleteIndividually = message.channel.type === 'DM' ? userMessages : olderMessages;
+        if (messagesToDeleteIndividually.size > 0) {
+            console.log(chalk.yellow(`[INFO] Suppression de ${messagesToDeleteIndividually.size} messages...`));
+            for (const msg of messagesToDeleteIndividually.values()) {
+                await msg.delete().catch(() => {});
+                deletedCount++;
+                await delay(350); // Rate limit 
+            }
+        }
+        
+        if (deletedCount === 0) {
+            if (message.deletable) await message.delete().catch(() => {});
+            const confirm = await message.channel.send('⚠️ Aucun message n\'a pu être supprimé. Vérifiez les permissions ou l\'âge des messages.');
+            setTimeout(() => confirm.delete().catch(() => {}), 3000);
+            return;
+        }
+        
+        const confirmMsg = await message.channel.send(`✅ ${deletedCount} messages supprimés.`);
+        setTimeout(() => confirmMsg.delete().catch(() => {}), 5000);
     } catch (e) {
         logError('cleanup', e.message);
-        await reply(message, "❌ Erreur lors de la suppression. Les messages sont peut-être trop anciens ou je n'ai pas les permissions.");
+        await reply(message, "❌ Erreur lors de la suppression. Je n'ai peut-être pas les permissions nécessaires ou une erreur s'est produite.");
     }
 }
 
